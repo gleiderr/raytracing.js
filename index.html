@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>raytracing.js</title>
+</head>
+<body>
+	<canvas width="640" height="480"></canvas>
+	<script type="module" src="index.js"></script>
+	<!-- <script type="text/javascript" src="index.js"></script> -->
+
+	<script type="module">
+		import {rayTrace} from './index.js';
+
+		let canvas = document.querySelector("canvas");
+		let context = canvas.getContext("2d");
+		let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+		context.fillStyle = 'lightblue';
+		context.fillRect(0, 0, 640, 480);
+		
+		rayTrace(canvas.width, canvas.height, (x, y, {r, g, b}) => {
+			imageData.data[y * (canvas.width * 4) + x * 4 + 0] = r;
+			imageData.data[y * (canvas.width * 4) + x * 4 + 1] = g;
+			imageData.data[y * (canvas.width * 4) + x * 4 + 2] = b;
+			imageData.data[y * (canvas.width * 4) + x * 4 + 3] = 255;
+			if(x == 0) console.log(x, y, r, g, b);
+			context.putImageData(imageData, 0, 0);
+		});
+
+	</script>
+</body>
+</html>
