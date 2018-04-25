@@ -1,15 +1,43 @@
-export class Coordinate {
-	constructor(...coords) {
-		this.coords = coords;
+export class Gaal {
+	static crossprod([v1, v2, v3], [w1, w2, w3]) {
+		let u1 =   v2*w3 - v3*w2;
+		let u2 = -(v1*w3 - v3*w1);
+		let u3 =   v1*w2 - v2*w1;
+		return [u1, u2, u3];
 	}
 
-	get x() { return this.coords[0]; }
-	get y() { return this.coords[1]; }
-	get z() { return this.coords[2]; }
+	static norm(v) {
+		let n = v.reduce((a, b) => a + b*b , 0);
+		//console.log('norm', Math.sqrt(n));
+		return Math.sqrt(n);
+	}
 
-	/*
-	Classe imutável.
-	set x(x) { this.coords[0] = x; }
-	set y(y) { this.coords[1] = x; }
-	set z(z) { this.coords[2] = x; }*/
+	static normalize(v) {
+		let norm = Gaal.norm(v);
+		//console.log('normalize', v.map(x => x / norm))
+		return v.map(x => x / norm);
+	}
+
+	static plus(...vs) {
+		let w = [];
+		for (let v of vs) {
+			//debugger;
+			for(let i = 0; i < v.length; i++) w[i] = (w[i] || 0) + v[i];
+			//console.log(w);
+		}
+		return w;
+	}
+
+	static prod(n, v) {
+		//console.log('prod', v.map(x => x * n));
+		return v.map(x => x * n);
+	}
+
+	static sub(v1, v2) {
+		let v3 = [];
+		for(var i = 0; i < v1.length; i++) v3[i] = v1[i] - v2[i];
+		//console.log('sub', v3);
+		return v3;
+	}
+
 }

@@ -11,6 +11,8 @@
 	<script type="module">
 		import {rayTrace} from './index.js';
 
+		let start = new Date();
+
 		let canvas = document.querySelector("canvas");
 		let context = canvas.getContext("2d");
 		let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -22,9 +24,12 @@
 			imageData.data[y * (canvas.width * 4) + x * 4 + 1] = g;
 			imageData.data[y * (canvas.width * 4) + x * 4 + 2] = b;
 			imageData.data[y * (canvas.width * 4) + x * 4 + 3] = 255;
-			if(x == 0) console.log(x, y, r, g, b);
-			context.putImageData(imageData, 0, 0);
+			if(x == canvas.width - 1) {
+				//console.log(x, y, r, g, b);
+				context.putImageData(imageData, 0, 0);
+			}
 		});
+		console.log('Tempo decorrido:', (new Date() - start) / 1000 + 's');
 
 	</script>
 </body>
