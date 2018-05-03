@@ -3,9 +3,10 @@ import {Gaal} from './gaal.js';
 const epsilon = 1e-3;
 
 class Sphere {
-	constructor(c, r) {
+	constructor(c, r, color) {
 		this.c = c;
 		this.r = r;
+		this.color = color;
 	}
 
 	intersection(R) {
@@ -80,7 +81,7 @@ export function rayTrace(width, heigth, setpixel) {
 }
 
 let objects = [
-	new Sphere([3, 3, 15], 1),
+	new Sphere([3, 3, 15], 1, [0, 0, 1]),
 ];
 
 // /* Shoot R into the scene and let X be the first object hit and p be the point of contact with this object. */
@@ -98,9 +99,9 @@ function trace(R) {
 	}
 
 	if(current_t < Number.MAX_VALUE) {
-		return {r: 255, g: 255, b: 255};
+		return current_obj.color;
 	} else {
-		return {r: 0, g: 0, b: 0};
+		return [0, 0, 0];
 	}
 
 	// if(X.reflective) {
