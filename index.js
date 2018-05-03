@@ -23,6 +23,8 @@ class Sphere {
 		let t_minus = (-b - Math.sqrt(delta))/2;
 		let t_plus  = (-b + Math.sqrt(delta))/2;
 
+		if(t_plus < 0) return { t: Number.MAX_VALUE };
+
 		let t = t_minus > epsilon ? t_minus : t_plus;
 		let inside = (t_minus < epsilon && t_plus > epsilon);
 
@@ -42,7 +44,7 @@ class Ray {
 export function rayTrace(width, heigth, setpixel) {
 	//console.log(Gaal.norm([3, 4]));
 	let eye = [0, 0, 0]; //denote the eye point,
-	let at = [0, 0, -1]; // denote the center point at which the camera is looking,
+	let at = [0, 0, 1]; // denote the center point at which the camera is looking,
 	let up = [0, 1, 0]; // denote the “up vector”
 	
 	let fovy = 60;
