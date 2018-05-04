@@ -68,13 +68,14 @@ export function rayTrace(width, heigth, setpixel) {
 		p[r] = []; u[r] = []; R[r] = [];
 		for(let c = 0; c < width; c++) {
 			let ay = -h*(r/heigth - 1/2);
-			let ax =  w*(c/width - 1/2);
+			let ax = -w*(c/width - 1/2);
 			//if(c == 0) debugger;
 			p[r][c] = Gaal.plus(eye, Gaal.prod(ax, Vvx), Gaal.prod(ay, Vvy), Gaal.prod(-1, Vvz));
 			u[r][c] = Gaal.normalize(Gaal.sub(p[r][c], eye));
 			R[r][c] = new Ray(eye, u[r][c], Number.MAX_VALUE);
 
 			//setpixel(c, r, c == r ? {r: 0, g: 0, b: 0} : {r: 255, g: 255, b: 255})
+			//requestAnimationFrame(callback: FrameRequestCallback)
 			setpixel(c, r, /*rgb*/ trace(R[r][c]));
 		}
 	}
