@@ -85,6 +85,9 @@ let objects = [
 	new Sphere([3, 3, 15], 1, [0, 0, 1]),
 ];
 
+let rho_a = 1;
+let L_a = [1, 1, 1];
+
 // /* Shoot R into the scene and let X be the first object hit and p be the point of contact with this object. */
 function trace(R) {
 	//let X be the first object hit and p be the point of contact with this object.
@@ -99,11 +102,20 @@ function trace(R) {
 		}
 	}
 
-	if(current_t < Number.MAX_VALUE) {
-		return current_obj.color;
-	} else {
-		return [0, 0, 0];
-	}
+	if (current_t == Number.MAX_VALUE) return [0, 0, 0];
+
+	//A vector n that is perpendicular to the surface and directed outwards from the surface
+	//let n = 
+	//vector ~v that points in the direction of the viewer
+	//let v = 
+	//A vector l that points towards the light source.
+	//let l = 
+	//A vector ~r that indicates the direction of pure reflection of the light vector
+	//let r =
+	//vector ~h that is midway between ~ℓ and ~v
+	//let h = 
+
+	let Ia = Gaal.prod(rho_a, Gaal.zip((a, b) => a * b, L_a, current_obj.color));
 
 	// if(X.reflective) {
 	// 	//compute the reflection ray Rr of R at p
@@ -119,5 +131,5 @@ function trace(R) {
 	// 	Cl += trace(Rl);
 	// }
 
-	//return Cr + Ct + Cl;
+	return Ia;
 }
