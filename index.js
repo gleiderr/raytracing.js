@@ -31,6 +31,10 @@ class Sphere {
 
 		return {t, inside};
 	}
+
+	normal(p) {
+		return Gaal.normalize(Gaal.sub(p, this.c));
+	}
 }
 
 class Ray {
@@ -82,16 +86,19 @@ export function rayTrace(width, heigth, setpixel) {
 }
 
 let objects = [
-	new Sphere([3, 3, 15], 1, [0, 0, 1]),
+	new Sphere([5, 4, 15], 1, [1, 1, 1]),
+	new Sphere([-1, 3, 13], 1, [1, 1, 1]),
+	new Sphere([-3, -3, 10], 1, [1, 1, 1]),
+	new Sphere([4, -2, 25], 1, [1, 1, 1]),
 ];
 
-let rho_a = 1;
-let L_a = [1, 1, 1];
+let lights = [
+	[0, 0, 12],
+];
 
 // /* Shoot R into the scene and let X be the first object hit and p be the point of contact with this object. */
 function trace(R) {
-	//let X be the first object hit and p be the point of contact with this object.
-	let current_obj = null;
+	/*let current_obj = null;
 	let current_t = Number.MAX_VALUE;
 
 	for(let obj of objects) {
@@ -100,22 +107,43 @@ function trace(R) {
 			current_t = t;
 			current_obj = obj;
 		}
-	}
+	}*/
 
-	if (current_t == Number.MAX_VALUE) return [0, 0, 0];
+	let {obj, t} = intersection(R);
+
+	if (t == Number.MAX_VALUE) return [0, 0, 0];
+
+	const prod = (a, b) => a * b;
+	const sum = (a, b) => a + b;
+	const sub = (a, b) => a - b;
 
 	//A vector n that is perpendicular to the surface and directed outwards from the surface
-	//let n = 
+	//debugger;
+	let p = Gaal.zip(sum, R.p, Gaal.prod(t, R.u));
+	let n = obj.normal(p);
 	//vector ~v that points in the direction of the viewer
 	//let v = 
-	//A vector l that points towards the light source.
-	//let l = 
 	//A vector ~r that indicates the direction of pure reflection of the light vector
 	//let r =
 	//vector ~h that is midway between ~ℓ and ~v
 	//let h = 
 
-	let Ia = Gaal.prod(rho_a, Gaal.zip((a, b) => a * b, L_a, current_obj.color));
+	let ρ_a = 0.08; //Parâmetro a ser incluído a cada superfície, não à cena
+	let L_a = [1, 1, 1];
+	let Ia = Gaal.prod(ρ_a, Gaal.zip(prod, L_a, obj.color));
+
+	// Iterar trecho para cada fonte luminosa
+	let Id;
+	for(let light of lights) {
+		//A vector l that points towards the light source.
+		let ℓ = Gaal.zip(sub, light, p);
+		    ℓ = Gaal.normalize(ℓ);
+		let ρ_d = 1; //Parâmetro a ser incluído a cada superfície, não à cena
+		let L_d = [1, 1, 1];
+		let cosϴ = Math.max(0, Gaal.dotprod(n, ℓ));
+		Id = Gaal.prod(ρ_d * cosϴ, L_d);
+		Id = Gaal.zip(prod, Id, obj.color);
+	}
 
 	// if(X.reflective) {
 	// 	//compute the reflection ray Rr of R at p
@@ -131,5 +159,21 @@ function trace(R) {
 	// 	Cl += trace(Rl);
 	// }
 
-	return Ia;
+	return Gaal.zip(sum, Ia, Id);
+}
+
+function intersection(R) {
+	//let obj be the first object hit and p be the point of contact with this object.
+	let current_obj = null;
+	let current_t = Number.MAX_VALUE;
+
+	for(let obj of objects) {
+		let { t, inside } = obj.intersection(R);
+		if(t < current_t) {
+			current_t = t;
+			current_obj = obj;
+		}
+	}
+
+	return {obj: current_obj, t: current_t};
 }
