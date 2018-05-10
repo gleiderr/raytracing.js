@@ -24,26 +24,9 @@ export class Gaal {
 		return v.map(x => x / norm);
 	}
 
-	static plus(...vs) {
-		let w = [...vs[0]];
-		for(let j = 1; j < vs.length; j++) {
-			//debugger;
-			for(let i = 0; i < w.length; i++) w[i] += vs[j][i];
-			//console.log(w);
-		}
-		return w;
-	}
-
 	static prod(n, v) {
 		//console.log('prod', v.map(x => x * n));
 		return v.map(x => x * n);
-	}
-
-	static sub(v1, v2) {
-		let v3 = [];
-		for(var i = 0; i < v1.length; i++) v3[i] = v1[i] - v2[i];
-		//console.log('sub', v3);
-		return v3;
 	}
 
 	static zip(f, ...vs) {
