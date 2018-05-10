@@ -86,9 +86,9 @@ export function rayTrace(width, heigth, setpixel) {
 
 let objects = [
 	new Sphere([5, 4, 15], 1, [1, 1, 1]),
-	new Sphere([-1, 3, 13], 1, [1, 1, 1]),
+	new Sphere([-1, 3, 12], 1, [1, 1, 1]),
 	new Sphere([-3, -3, 10], 1, [1, 1, 1]),
-	new Sphere([4, -2, 25], 1, [1, 1, 1]),
+	new Sphere([2, -2, 17], 1, [1, 1, 1]),
 ];
 
 let lights = [
@@ -121,11 +121,12 @@ function trace(R) {
 	for(let light of lights) {
 		//A vector l that points towards the light source.
 		let ℓ = Gaal.zip(sub, light, p);
+		let d = Gaal.norm(ℓ);
 		    ℓ = Gaal.normalize(ℓ);
 		let ρ_d = 1; //Parâmetro a ser incluído a cada superfície, não à cena
-		let L_d = [1, 1, 1];
+		let L_d = [5, 5, 5]; //Intensidade da luz. Diferente da apostila de David Mount //Parâmetro da fonte emissora
 		let cosϴ = Math.max(0, Gaal.dotprod(n, ℓ));
-		Id = Gaal.prod(ρ_d * cosϴ, L_d);
+		Id = Gaal.prod((ρ_d * cosϴ)/Math.pow(d, 2), L_d);
 	}
 
 	// if(X.reflective) {
