@@ -7,7 +7,7 @@
 	<canvas width="640" height="480"></canvas>
 	<script type="module" src="index.js"></script>
 	<script type="module">
-		import {rayTrace} from './index.js';
+		import {rayTrace, setupScenery} from './index.js';
 
 		let start = new Date();
 
@@ -16,8 +16,17 @@
 		let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 		
 		//requestAnimationFrame(callback: FrameRequestCallback)
+
+		let scenery = {
+			eye: [0, 0, 0], //denote the eye point,
+			at: [0, 0, 1], // denote the center point at which the camera is looking,
+			up: [0, 1, 0], // denote the “up vector”
+			fovy: 60, //field of view
+			width: canvas.width,
+			height: canvas.height,
+		};
 		
-		rayTrace(canvas.width, canvas.height, (x, y, [r, g, b]) => {
+		rayTrace(setupScenery(scenery), (x, y, [r, g, b]) => {
 			imageData.data[y * (canvas.width * 4) + x * 4 + 0] = r * 255;
 			imageData.data[y * (canvas.width * 4) + x * 4 + 1] = g * 255;
 			imageData.data[y * (canvas.width * 4) + x * 4 + 2] = b * 255;

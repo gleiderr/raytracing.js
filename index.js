@@ -46,49 +46,50 @@ class Ray {
 	}
 }
 
+export function setupScenery(scenery) {
+	let s = {...scenery};
+
+	s.ϴy = Math.PI * s.fovy / 180; //field of view
+	s.h = 2 * Math.tan(s.ϴy/2);
+	s.w = s.h * s.width / s.height;
+	
+	s.view = Gaal.normalize(Gaal.zip(sub, s.at, s.eye));
+
+	s.Vvz = Gaal.prod(-1, s.view);
+	s.Vvx = Gaal.crossprod(s.view, s.up);
+	s.Vvy = Gaal.crossprod(s.Vvz, s.Vvx);
+
+	return s;
+}
+
 /* Given the camera setup and the image size, generate a ray Rij from the eye passing through the center of each pixel (i, j) 
 of your image window (See Fig. 62.) Call trace(R) and assign the color returned to this pixel.*/
-export function rayTrace(width, heigth, setpixel) {
-	//console.log(Gaal.norm([3, 4]));
-	let eye = [0, 0, 0]; //denote the eye point,
-	let at = [0, 0, 1]; // denote the center point at which the camera is looking,
-	let up = [0, 1, 0]; // denote the “up vector”
-	
-	let fovy = 60;
-	let teta_y = Math.PI * fovy / 180;
-
-	let alpha = width / heigth;
-
-	let h = 2 * Math.tan(teta_y/2);
-	let w = h * alpha;
-
-	let view = Gaal.normalize(Gaal.zip(sub, at, eye));
-
-	let Vvz = Gaal.prod(-1, view);
-	let Vvx = Gaal.crossprod(view, up);
-	let Vvy = Gaal.crossprod(Vvz, Vvx);
-	
+export function rayTrace(scenery, setpixel) {
 	let p = [], u = [], R = [];
-	for(let r = 0; r < heigth; r++) {
+	for(let r = 0; r < scenery.height; r++) {
 		p[r] = []; u[r] = []; R[r] = [];
-		for(let c = 0; c < width; c++) {
-			let ay = -h*(r/heigth - 1/2);
-			let ax = -w*(c/width - 1/2);
+		for(let c = 0; c < scenery.width; c++) {
+			let ay = -scenery.h*(r/scenery.height - 1/2);
+			let ax = -scenery.w*(c/scenery.width - 1/2);
 			
-			p[r][c] = Gaal.zip(sum, eye, Gaal.prod(ax, Vvx), Gaal.prod(ay, Vvy), Gaal.prod(-1, Vvz));
-			u[r][c] = Gaal.normalize(Gaal.zip(sub, p[r][c], eye));
-			R[r][c] = new Ray(eye, u[r][c], Number.MAX_VALUE);
+			p[r][c] = Gaal.zip(sum, 
+							scenery.eye, 
+							Gaal.prod(ax, scenery.Vvx), 
+							Gaal.prod(ay, scenery.Vvy), 
+							Gaal.prod(-1, scenery.Vvz));
+			u[r][c] = Gaal.normalize(Gaal.zip(sub, p[r][c], scenery.eye));
+			R[r][c] = new Ray(scenery.eye, u[r][c], Number.MAX_VALUE);
 			
-			setpixel(c, r, /*rgb*/ trace(R[r][c]));
+			setpixel(c, r, /*rgb*/ trace(R[r][c], scenery));
 		}
 	}
 }
 
 let objects = [
-	new Sphere([5, 4, 15], 1, [1, 1, 1]),
-	new Sphere([-1, 3, 12], 1, [1, 1, 1]),
-	new Sphere([-3, -3, 10], 1, [1, 1, 1]),
-	new Sphere([2, -2, 17], 1, [1, 1, 1]),
+	new Sphere([5, 4, 15], 1),
+	new Sphere([-1, 3, 12], 1),
+	new Sphere([-3, -3, 10], 1),
+	new Sphere([2, -2, 17], 1),
 ];
 
 let lights = [
