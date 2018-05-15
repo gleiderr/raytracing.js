@@ -64,25 +64,28 @@ export function setupScenery(scenery) {
 
 /* Given the camera setup and the image size, generate a ray Rij from the eye passing through the center of each pixel (i, j) 
 of your image window (See Fig. 62.) Call trace(R) and assign the color returned to this pixel.*/
-export function rayTrace(scenery, setpixel) {
-	let p = [], u = [], R = [];
+export function rayTrace(scenery, setpixel, print) {
+	let R = [];
 	for(let r = 0; r < scenery.height; r++) {
-		p[r] = []; u[r] = []; R[r] = [];
+		R[r] = [];
 		for(let c = 0; c < scenery.width; c++) {
 			let ay = -scenery.h*(r/scenery.height - 1/2);
 			let ax = -scenery.w*(c/scenery.width - 1/2);
 			
-			p[r][c] = Gaal.zip(sum, 
+			let p = Gaal.zip(sum, 
 							scenery.eye, 
 							Gaal.prod(ax, scenery.Vvx), 
 							Gaal.prod(ay, scenery.Vvy), 
 							Gaal.prod(-1, scenery.Vvz));
-			u[r][c] = Gaal.normalize(Gaal.zip(sub, p[r][c], scenery.eye));
-			R[r][c] = new Ray(scenery.eye, u[r][c], Number.MAX_VALUE);
+			let u = Gaal.normalize(Gaal.zip(sub, p, scenery.eye));
+			R[r][c] = new Ray(scenery.eye, u, Number.MAX_VALUE);
 			
-			setpixel(c, r, /*rgb*/ trace(R[r][c], scenery));
+			//setpixel(c, r, /*rgb*/ trace(R[r][c]));
+			setTimeout(() => setpixel(c, r, /*rgb*/ trace(R[r][c])), 0);
 		}
 	}
+
+	if(print) print();
 }
 
 let objects = [

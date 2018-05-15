@@ -25,16 +25,27 @@
 			width: canvas.width,
 			height: canvas.height,
 		};
+
+		let end = false;
 		
 		rayTrace(setupScenery(scenery), (x, y, [r, g, b]) => {
 			imageData.data[y * (canvas.width * 4) + x * 4 + 0] = r * 255;
 			imageData.data[y * (canvas.width * 4) + x * 4 + 1] = g * 255;
 			imageData.data[y * (canvas.width * 4) + x * 4 + 2] = b * 255;
 			imageData.data[y * (canvas.width * 4) + x * 4 + 3] = 255;
-		});
-		context.putImageData(imageData, 0, 0);
-		
-		console.log('Tempo decorrido:', (new Date() - start) / 1000 + 's');
+
+			end = (x == canvas.width - 1) && (y == canvas.height -1);
+		}, print);
+
+		function print() {
+			context.putImageData(imageData, 0, 0);
+			
+			if(end) {
+				console.log('Tempo decorrido:', (new Date() - start) / 1000 + 's');
+				return;
+			}
+			requestAnimationFrame(() => print());
+		}
 
 	</script>
 </body>

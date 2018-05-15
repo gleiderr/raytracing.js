@@ -10,6 +10,9 @@ Desenvolver requestAnimationFrame() para o usuário poder ver o progresso da ren
 Mover função trace para dentro de cada objeto, assim cada um se responsabiliza sobre como deve ser renderizado;
 Definir cor de cada objeto;
 Definir taxa_de_emissão de cada objeto;
+	A cor emitida será igual a sua própria cor;
+	A particularidade de "luz negra" será considerada depois;
 Definir reflexão;
 Definir refração;
+❓ Definir cor ambiente a partir da média da distância entre objetos e suas emissões de luz
 ❓ Definir "especularidade"?
