@@ -36,6 +36,47 @@ class Sphere {
 	normal(p) {
 		return Gaal.normalize(Gaal.zip(sub, p, this.c));
 	}
+
+	brdf(R, t) {
+		//A vector n that is perpendicular to the surface and directed outwards from the surface
+		let p = Gaal.zip(sum, R.p, Gaal.prod(t, R.u));
+		let n = this.normal(p);
+		//vector ~v that points in the direction of the viewer
+		//let v = 
+		//A vector ~r that indicates the direction of pure reflection of the light vector
+		//let r =
+		//vector ~h that is midway between ~ℓ and ~v
+		//let h = 
+
+		let ρ_a = 0.08; //Parâmetro a ser incluído a cada superfície, não à cena
+		let L_a = [1, 1, 1];
+		let Ia = Gaal.prod(ρ_a, L_a);
+
+		// Iterar trecho para cada fonte luminosa
+		let Id;
+		for(let light of lights) {
+			//A vector l that points towards the light source.
+			let ℓ = Gaal.zip(sub, light, p);
+			let d = Gaal.norm(ℓ);
+			    ℓ = Gaal.normalize(ℓ);
+			let ρ_d = 1; //Parâmetro a ser incluído a cada superfície, não à cena
+			let L_d = [5, 5, 5]; //Intensidade da luz. Diferente da apostila de David Mount //Parâmetro da fonte emissora
+			let cosϴ = Math.max(0, Gaal.dotprod(n, ℓ));
+			Id = Gaal.prod((ρ_d * cosϴ)/Math.pow(d, 2), L_d);
+		}
+
+		// if(X.reflective) {
+		// 	//compute the reflection ray Rr of R at p
+		// 	Cr = trace(Rr);
+		// }
+		// if(X.transparent) {
+		// 	//compute the transmission (refraction) ray Rt of R at p
+		// 	if(inside) /*...*/ ;
+		// 	Ct = trace(Rt);
+		// }
+
+		return Gaal.zip(sum, Ia, Id);
+	}
 }
 
 class Ray {
@@ -45,6 +86,17 @@ class Ray {
 		this.t = t;
 	}
 }
+
+let objects = [
+	new Sphere([5, 4, 15], 1),
+	new Sphere([-1, 3, 12], 1),
+	new Sphere([-3, -3, 10], 1),
+	new Sphere([2, -2, 17], 1),
+];
+
+let lights = [
+	[0, 0, 12],
+];
 
 export function setupScenery(scenery) {
 	let s = {...scenery};
@@ -88,62 +140,13 @@ export function rayTrace(scenery, setpixel, print) {
 	if(print) print();
 }
 
-let objects = [
-	new Sphere([5, 4, 15], 1),
-	new Sphere([-1, 3, 12], 1),
-	new Sphere([-3, -3, 10], 1),
-	new Sphere([2, -2, 17], 1),
-];
-
-let lights = [
-	[0, 0, 12],
-];
-
 // /* Shoot R into the scene and let X be the first object hit and p be the point of contact with this object. */
 function trace(R) {
 	let {obj, t} = intersection(R);
 
 	if (t == Number.MAX_VALUE) return [0, 0, 0];
 
-	//A vector n that is perpendicular to the surface and directed outwards from the surface
-	//debugger;
-	let p = Gaal.zip(sum, R.p, Gaal.prod(t, R.u));
-	let n = obj.normal(p);
-	//vector ~v that points in the direction of the viewer
-	//let v = 
-	//A vector ~r that indicates the direction of pure reflection of the light vector
-	//let r =
-	//vector ~h that is midway between ~ℓ and ~v
-	//let h = 
-
-	let ρ_a = 0.08; //Parâmetro a ser incluído a cada superfície, não à cena
-	let L_a = [1, 1, 1];
-	let Ia = Gaal.prod(ρ_a, L_a);
-
-	// Iterar trecho para cada fonte luminosa
-	let Id;
-	for(let light of lights) {
-		//A vector l that points towards the light source.
-		let ℓ = Gaal.zip(sub, light, p);
-		let d = Gaal.norm(ℓ);
-		    ℓ = Gaal.normalize(ℓ);
-		let ρ_d = 1; //Parâmetro a ser incluído a cada superfície, não à cena
-		let L_d = [5, 5, 5]; //Intensidade da luz. Diferente da apostila de David Mount //Parâmetro da fonte emissora
-		let cosϴ = Math.max(0, Gaal.dotprod(n, ℓ));
-		Id = Gaal.prod((ρ_d * cosϴ)/Math.pow(d, 2), L_d);
-	}
-
-	// if(X.reflective) {
-	// 	//compute the reflection ray Rr of R at p
-	// 	Cr = trace(Rr);
-	// }
-	// if(X.transparent) {
-	// 	//compute the transmission (refraction) ray Rt of R at p
-	// 	if(inside) /*...*/ ;
-	// 	Ct = trace(Rt);
-	// }
-
-	return Gaal.zip(sum, Ia, Id);
+	return obj.brdf(R, t);
 }
 
 function intersection(R) {
