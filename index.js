@@ -1,6 +1,6 @@
 import {Gaal} from './gaal.js';
 
-const epsilon = 1e-3;
+const ϵ = 1e-3;
 const prod = (a, b) => a * b;
 const sum = (a, b) => a + b;
 const sub = (a, b) => a - b;
@@ -9,6 +9,10 @@ class Sphere {
 	constructor(c, r) {
 		this.c = c;
 		this.r = r;
+		this.ρa = 0.05; //Taxa luz ambiente
+		this.ρe = 0; //Taxa de emissão
+		this.ρd = 1; //Taxa luz difusa
+		this.color = [1, 1, 1];
 	}
 
 	intersection(R) {
@@ -27,8 +31,8 @@ class Sphere {
 
 		let t_minus = (-b - Math.sqrt(delta))/2;
 
-		let t = t_minus > epsilon ? t_minus : t_plus;
-		let inside = (t_minus < epsilon && t_plus > epsilon);
+		let t = t_minus > ϵ ? t_minus : t_plus;
+		let inside = (t_minus < ϵ && t_plus > ϵ);
 
 		return {t, inside};
 	}
@@ -37,7 +41,7 @@ class Sphere {
 		return Gaal.normalize(Gaal.zip(sub, p, this.c));
 	}
 
-	brdf(R, t) {
+	brdf(R, t, deep) {
 		//A vector n that is perpendicular to the surface and directed outwards from the surface
 		let p = Gaal.zip(sum, R.p, Gaal.prod(t, R.u));
 		let n = this.normal(p);
@@ -48,21 +52,35 @@ class Sphere {
 		//vector ~h that is midway between ~ℓ and ~v
 		//let h = 
 
-		let ρ_a = 0.08; //Parâmetro a ser incluído a cada superfície, não à cena
-		let L_a = [1, 1, 1];
-		let Ia = Gaal.prod(ρ_a, L_a);
+		//Radiosidade ambiente
+		let Ia = Gaal.zip(prod, this.color, [1, 1, 1]); //cor [1, 1, 1] deve ser atribuída à cena
+		    Ia = Gaal.prod(this.ρa, Ia);
 
-		// Iterar trecho para cada fonte luminosa
-		let Id;
-		for(let light of lights) {
+		//Radiosidade emissiva
+		let Ie = [0, 0, 0];
+		if(this.ρe) {
+			/*let d = Gaal.norm(v);*/
+			let cosϴ = Math.max(0, Gaal.dotprod(n, Gaal.prod(-1, R.u)));
+			Ie = Gaal.prod(this.ρe * cosϴ/* / Math.pow(d, 2)*/, this.color);
+		}
+
+		//Iterar para cada objeto da cena
+		let Id = [0, 0, 0];
+		for(let object of objects) {
+			if (object == this) continue;
 			//A vector l that points towards the light source.
-			let ℓ = Gaal.zip(sub, light, p);
-			let d = Gaal.norm(ℓ);
+			let ℓ = Gaal.zip(sub, object.c, p);
 			    ℓ = Gaal.normalize(ℓ);
-			let ρ_d = 1; //Parâmetro a ser incluído a cada superfície, não à cena
-			let L_d = [5, 5, 5]; //Intensidade da luz. Diferente da apostila de David Mount //Parâmetro da fonte emissora
-			let cosϴ = Math.max(0, Gaal.dotprod(n, ℓ));
-			Id = Gaal.prod((ρ_d * cosϴ)/Math.pow(d, 2), L_d);
+
+		 	let cosϴ = Math.max(0, Gaal.dotprod(n, ℓ));
+
+		 	if(!cosϴ) continue;
+
+			let Ld = trace(new Ray(p, ℓ), deep + 1, object); //Intensidade da luz. Diferente da apostila de David Mount //Parâmetro da fonte emissora
+		 	
+		 	if(!Ld[0] && !Ld[1] && !Ld[2]) continue;
+		 	
+		 	Id = Gaal.zip(sum, Id, Gaal.prod((this.ρd * cosϴ)/Math.pow(t, 2), Ld));
 		}
 
 		// if(X.reflective) {
@@ -75,12 +93,12 @@ class Sphere {
 		// 	Ct = trace(Rt);
 		// }
 
-		return Gaal.zip(sum, Ia, Id);
+		return Gaal.zip(sum, Ia, Id, Ie);
 	}
 }
 
 class Ray {
-	constructor(p, u, t) {
+	constructor(p, u, t = Number.MAX_VALUE) {
 		this.p = p;
 		this.u = u;
 		this.t = t;
@@ -92,11 +110,10 @@ let objects = [
 	new Sphere([-1, 3, 12], 1),
 	new Sphere([-3, -3, 10], 1),
 	new Sphere([2, -2, 17], 1),
+	new Sphere([0, 0, 12], .3),
 ];
 
-let lights = [
-	[0, 0, 12],
-];
+objects[4].ρe = 120; //Taxa de emissão
 
 export function setupScenery(scenery) {
 	let s = {...scenery};
@@ -133,7 +150,7 @@ export function rayTrace(scenery, setpixel, print) {
 			R[r][c] = new Ray(scenery.eye, u, Number.MAX_VALUE);
 			
 			//setpixel(c, r, /*rgb*/ trace(R[r][c]));
-			setTimeout(() => setpixel(c, r, /*rgb*/ trace(R[r][c])), 0);
+			setTimeout(() => setpixel(c, r, /*rgb*/ trace(R[r][c], 0)), 0);
 		}
 	}
 
@@ -141,12 +158,15 @@ export function rayTrace(scenery, setpixel, print) {
 }
 
 // /* Shoot R into the scene and let X be the first object hit and p be the point of contact with this object. */
-function trace(R) {
+function trace(R, deep, target = null) {
+	if (deep == 5) return [0, 0, 0];
 	let {obj, t} = intersection(R);
+
+	if (target && target != obj) return [0, 0, 0];
 
 	if (t == Number.MAX_VALUE) return [0, 0, 0];
 
-	return obj.brdf(R, t);
+	return obj.brdf(R, t, deep);
 }
 
 function intersection(R) {
@@ -156,7 +176,7 @@ function intersection(R) {
 
 	for(let obj of objects) {
 		let { t, inside } = obj.intersection(R);
-		if(t < current_t) {
+		if(t < current_t && t > ϵ) {
 			current_t = t;
 			current_obj = obj;
 		}
